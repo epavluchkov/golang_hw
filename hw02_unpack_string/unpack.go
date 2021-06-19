@@ -2,9 +2,7 @@ package hw02unpackstring
 
 import (
 	"errors"
-	"strconv"
 	"strings"
-	"unicode"
 )
 
 var ErrInvalidString = errors.New("invalid string")
@@ -12,36 +10,64 @@ var ErrInvalidString = errors.New("invalid string")
 func Unpack(s string) (string, error) {
 	var sb strings.Builder
 
-	var prev, cur rune
+	var prev rune
 
-	for _, cur = range s {
-		// Проверяем, что строка не начинается с цифры и не содержит более одной цифры подряд
-		if unicode.IsDigit(cur) && (unicode.IsDigit(prev) || prev == 0) {
-			return "", ErrInvalidString
-		}
+	type states int
 
-		// Записываем предыдущий символ в целевую строку (если предыдущий символ не цифра):
-		// если текущий символ не цифра - один раз
-		// если текущий симовл цира - столько раз, какая у нас цифра в текущем символе.
-		if !unicode.IsDigit(prev) && prev != 0 {
-			if !unicode.IsDigit(cur) {
-				sb.WriteRune(prev)
-			} else {
-				i, err := strconv.Atoi(string(cur))
-				if err != nil {
-					return "", err
+	const (
+		begin states = iota
+		escape
+		symbol
+	)
+
+	state := begin
+
+	for _, cur := range s {
+		switch {
+		case '0' <= cur && cur <= '9':
+			switch state {
+			case begin:
+				return "", ErrInvalidString
+			case escape:
+				prev = cur
+				state = symbol
+			case symbol:
+				for i := rune(0); i < cur-'0'; i++ {
+					sb.WriteRune(prev)
 				}
-				sb.WriteString(strings.Repeat(string(prev), i))
+				state = begin
+			}
+		case cur == '\\':
+			switch state {
+			case begin:
+				state = escape
+			case escape:
+				prev = cur
+				state = symbol
+			case symbol:
+				sb.WriteRune(prev)
+				state = escape
+			}
+		default:
+			switch state {
+			case begin:
+				prev = cur
+				state = symbol
+			case escape:
+				return "", ErrInvalidString
+			case symbol:
+				sb.WriteRune(prev)
+				prev = cur
 			}
 		}
-
-		prev = cur
 	}
 
-	// Добавляем последний символ исходной строки, если он не цифра
-	// и если исходная строка не пустая
-	if !unicode.IsDigit(cur) && len(s) > 0 {
-		sb.WriteRune(cur)
+	switch state {
+	case begin:
+	case escape:
+		return "", ErrInvalidString
+	case symbol:
+		sb.WriteRune(prev)
 	}
 
 	return sb.String(), nil
