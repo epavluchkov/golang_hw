@@ -1,4 +1,4 @@
-module github.com/epavluchkov/golanghw/hw04_lru_cache
+module github.com/epavluchkov/golang_hw/hw04_lru_cache
 
 go 1.16
 
