@@ -19,13 +19,13 @@ type ListItem struct {
 type list struct {
 	FirstItem *ListItem
 	LastItem  *ListItem
-	lenth     int
+	length    int
 }
 
 type ListImpl list
 
 func (l *list) Len() int {
-	return l.lenth
+	return l.length
 }
 
 func (l *list) Front() *ListItem {
@@ -49,7 +49,7 @@ func (l *list) PushFront(v interface{}) *ListItem {
 		l.LastItem = &li
 	}
 
-	l.lenth++
+	l.length++
 
 	return &li
 }
@@ -67,7 +67,7 @@ func (l *list) PushBack(v interface{}) *ListItem {
 		l.FirstItem = &li
 	}
 
-	l.lenth++
+	l.length++
 
 	return &li
 }
@@ -85,27 +85,29 @@ func (l *list) Remove(item *ListItem) {
 		l.LastItem = item.Prev
 	}
 
-	l.lenth--
+	l.length--
 }
 
 func (l *list) MoveToFront(item *ListItem) {
-	if l.FirstItem != item {
-		if item.Prev != nil {
-			if l.LastItem == item {
-				l.LastItem = item.Prev
-			}
-			item.Prev.Next = item.Next
-		}
-
-		if item.Next != nil {
-			item.Next.Prev = item.Prev
-		}
-
-		l.FirstItem.Prev = item
-		item.Prev = nil
-		item.Next = l.FirstItem
-		l.FirstItem = item
+	if l.FirstItem == item {
+		return
 	}
+
+	if item.Prev != nil {
+		if l.LastItem == item {
+			l.LastItem = item.Prev
+		}
+		item.Prev.Next = item.Next
+	}
+
+	if item.Next != nil {
+		item.Next.Prev = item.Prev
+	}
+
+	l.FirstItem.Prev = item
+	item.Prev = nil
+	item.Next = l.FirstItem
+	l.FirstItem = item
 }
 
 func NewList() List {
