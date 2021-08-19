@@ -17,8 +17,97 @@ type ListItem struct {
 }
 
 type list struct {
-	List // Remove me after realization.
-	// Place your code here.
+	FirstItem *ListItem
+	LastItem  *ListItem
+	length    int
+}
+
+type ListImpl list
+
+func (l *list) Len() int {
+	return l.length
+}
+
+func (l *list) Front() *ListItem {
+	return l.FirstItem
+}
+
+func (l *list) Back() *ListItem {
+	return l.LastItem
+}
+
+func (l *list) PushFront(v interface{}) *ListItem {
+	li := ListItem{v, l.FirstItem, nil}
+
+	if l.FirstItem != nil {
+		l.FirstItem.Prev = &li
+	}
+
+	l.FirstItem = &li
+
+	if l.LastItem == nil {
+		l.LastItem = &li
+	}
+
+	l.length++
+
+	return &li
+}
+
+func (l *list) PushBack(v interface{}) *ListItem {
+	li := ListItem{v, nil, l.LastItem}
+
+	if l.LastItem != nil {
+		l.LastItem.Next = &li
+	}
+
+	l.LastItem = &li
+
+	if l.FirstItem == nil {
+		l.FirstItem = &li
+	}
+
+	l.length++
+
+	return &li
+}
+
+func (l *list) Remove(item *ListItem) {
+	if item.Prev != nil {
+		item.Prev.Next = item.Next
+	} else {
+		l.FirstItem = item.Next
+	}
+
+	if item.Next != nil {
+		item.Next.Prev = item.Prev
+	} else {
+		l.LastItem = item.Prev
+	}
+
+	l.length--
+}
+
+func (l *list) MoveToFront(item *ListItem) {
+	if l.FirstItem == item {
+		return
+	}
+
+	if item.Prev != nil {
+		if l.LastItem == item {
+			l.LastItem = item.Prev
+		}
+		item.Prev.Next = item.Next
+	}
+
+	if item.Next != nil {
+		item.Next.Prev = item.Prev
+	}
+
+	l.FirstItem.Prev = item
+	item.Prev = nil
+	item.Next = l.FirstItem
+	l.FirstItem = item
 }
 
 func NewList() List {
