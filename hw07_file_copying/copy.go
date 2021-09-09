@@ -27,8 +27,6 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		qtyBytes = fileInfo.Size() - offset
 	}
 
-	p := make([]byte, qtyBytes)
-
 	fileFrom, err := os.OpenFile(fromPath, os.O_RDONLY, 0655)
 	if err != nil {
 		return err
@@ -36,11 +34,6 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	defer fileFrom.Close()
 
 	_, err = fileFrom.Seek(offset, 0)
-	if err != nil {
-		return err
-	}
-
-	_, err = fileFrom.ReadAt(p, offset)
 	if err != nil {
 		return err
 	}
