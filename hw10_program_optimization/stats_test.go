@@ -3,6 +3,7 @@
 package hw10programoptimization
 
 import (
+	"archive/zip"
 	"bytes"
 	"testing"
 
@@ -36,4 +37,21 @@ func TestGetDomainStat(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, DomainStat{}, result)
 	})
+
+	t.Run("empty data", func(t *testing.T) {
+		_, err := GetDomainStat(bytes.NewBufferString(""), "com")
+		require.NoError(t, err)
+	})
+}
+
+func BenchmarkGetDomainStat(b *testing.B) {
+	r, _ := zip.OpenReader("testdata/users.dat.zip")
+	defer r.Close()
+
+	data, _ := r.File[0].Open()
+	defer data.Close()
+
+	for i := 0; i < b.N; i++ {
+		_, _ = GetDomainStat(data, "biz")
+	}
 }
