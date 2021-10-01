@@ -3,7 +3,6 @@ package hw10programoptimization
 import (
 	"bufio"
 	"io"
-	"regexp"
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
@@ -33,17 +32,12 @@ func countDomains(r io.Reader, domain string) (DomainStat, error) {
 	var user User
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 
-	re, err := regexp.Compile("\\." + domain)
-	if err != nil {
-		return nil, err
-	}
-
 	for sc.Scan() {
-		if err = json.Unmarshal(sc.Bytes(), &user); err != nil {
+		if err := json.Unmarshal(sc.Bytes(), &user); err != nil {
 			return nil, err
 		}
 
-		if re.Match([]byte(user.Email)) {
+		if strings.HasSuffix(user.Email, domain) {
 			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]++
 		}
 	}
