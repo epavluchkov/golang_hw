@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 type UserRole string
@@ -41,11 +43,14 @@ func TestValidate(t *testing.T) {
 		in          interface{}
 		expectedErr error
 	}{
-		{
-			// Place your code here.
-		},
-		// ...
-		// Place your code here.
+		{App{Version: "xxxx"}, ValidationErrors{{Field: "Version", Err: ErrInvalidLen}}},
+		{App{Version: "xxxxx"}, nil},
+		{App{Version: "xxxxxx"}, ValidationErrors{{Field: "Version", Err: ErrInvalidLen}}},
+		{User{ID: "AAAAAA-BBBBBB-CCCCCC-DDDDDD-EEEEEE", Age: 65, Email: "aaa bbb", Role: "guest", Phones: []string{"123456789013"}, meta: []byte("xxx")}, ValidationErrors{{Field: "ID", Err: ErrInvalidLen}, {Field: "Age", Err: ErrValueGreatMax}, {Field: "Email", Err: ErrNoMatchRegexp}, {Field: "Role", Err: ErrValueNotInSet}, {Field: "Phones", Err: ErrInvalidLen}}},
+		{User{ID: "AAAAAA-BBBBBB-CCCCCC-DDDDDD-EEEEEE-F", Age: 30, Email: "mybox@gmail.com", Role: "admin", Phones: []string{"12345678901"}}, nil},
+		{Response{Code: 200, Body: ""}, nil},
+		{Response{Code: 888, Body: ""}, ValidationErrors{{Field: "Code", Err: ErrValueNotInSet}}},
+		{Token{[]byte("fff"), []byte("ddd"), []byte("xxx")}, nil},
 	}
 
 	for i, tt := range tests {
@@ -53,8 +58,12 @@ func TestValidate(t *testing.T) {
 			tt := tt
 			t.Parallel()
 
-			// Place your code here.
-			_ = tt
+			err := Validate(tt.in)
+			if tt.expectedErr == nil {
+				require.NoError(t, err)
+			} else {
+				require.EqualError(t, err, tt.expectedErr.Error())
+			}
 		})
 	}
 }
